@@ -1,4 +1,4 @@
-name: Gdanskcraft BungeeCord plugin
+name: Gdanskcraft-BungeeCord-plugin
 main: pl.sebcel.minecraft.gdanskcraft.BungeeCordPlugin
 version: 1.0.0
 author: Sebastian Celejewski

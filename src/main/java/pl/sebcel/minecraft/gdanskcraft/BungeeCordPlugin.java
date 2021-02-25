@@ -26,10 +26,13 @@ public class BungeeCordPlugin extends Plugin {
 	@Override
 	public void onEnable() {
 		initialize();
+		this.eventHandler.setPlugin(this);
 		pluginConfig.initialize(getDataFolder(), CONFIG_FILE_NAME);
 		activePlayersMonitor.initialize(getProxy(), pluginConfig.getLobbyServerSymbol(), pluginConfig.getDefaultServerSymbol(), pluginConfig.getServerCoolDownInSeconds());
 		serviceProxy.initialize(pluginConfig.getServiceUrl(), pluginConfig.getApiKey(), pluginConfig.getInstanceName());
-		
+
+		this.eventHandler.setPluginConfig(pluginConfig);
+
 		getLogger().info("Minecraft Server Wake Up Plugin enabled. Default server symbol: " + pluginConfig.getDefaultServerSymbol() + ", server cool down period in seconds: " + pluginConfig.getServerCoolDownInSeconds());
 
 		getProxy().getPluginManager().registerListener(this, eventHandler);
