@@ -27,6 +27,7 @@ public class BungeeCordPlugin extends Plugin {
 	public void onEnable() {
 		initialize();
 		this.eventHandler.setPlugin(this);
+		this.eventHandler.setProxyServer(getProxy());
 		pluginConfig.initialize(getDataFolder(), CONFIG_FILE_NAME);
 		activePlayersMonitor.initialize(getProxy(), pluginConfig.getLobbyServerSymbol(), pluginConfig.getDefaultServerSymbol(), pluginConfig.getServerCoolDownInSeconds());
 		serviceProxy.initialize(pluginConfig.getServiceUrl(), pluginConfig.getApiKey(), pluginConfig.getInstanceName());

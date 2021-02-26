@@ -1,8 +1,6 @@
 package pl.sebcel.minecraft.gdanskcraft;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Logger;
 
 import net.md_5.bungee.config.Configuration;
