@@ -42,14 +42,14 @@ public class PluginEventHandler implements Listener {
 				return;
 			}
 			
-			String[] tokens = message.split(",");
-			String playerName = tokens[0].substring(2);
-			int dimension = Integer.parseInt(tokens[1]);
-			int x = Integer.parseInt(tokens[2]);
-			int y = Integer.parseInt(tokens[3]);
-			int z = Integer.parseInt(tokens[4]);
-
-			String coordinates = dimension + "," + x + "," + y + "," + z;
+			logger.info(message);
+			
+			String[] currentPlayerTokens = message.split(",");
+			String playerName = currentPlayerTokens[0].substring(2);
+			int dimension = Integer.parseInt(currentPlayerTokens[1]);
+			int x = Integer.parseInt(currentPlayerTokens[2]);
+			int y = Integer.parseInt(currentPlayerTokens[3]);
+			int z = Integer.parseInt(currentPlayerTokens[4]);
 
 			Optional<ProxiedPlayer> maybePlayer = proxyServer.getPlayers().stream().filter(player -> player.getName().equals(playerName)).findFirst();
 			
@@ -67,13 +67,22 @@ public class PluginEventHandler implements Listener {
 			
 			for(String targetServerSymbol : currentServerPortals.getKeys()) {
 				String targetServerCoordinates = currentServerPortals.getString(targetServerSymbol);
-				if (targetServerCoordinates.equals(coordinates)) {
+				String[] targetServerTokens = targetServerCoordinates.split(",");
+				int targetDimension = Integer.parseInt(targetServerTokens[0]);
+				int targetX = Integer.parseInt(targetServerTokens[1]);
+				int targetY = Integer.parseInt(targetServerTokens[2]);
+				int targetZ = Integer.parseInt(targetServerTokens[3]);
+				
+				double distance = Math.sqrt((x - targetX)*(x-targetX) + (y - targetY)*(y-targetY) + (z - targetZ)*(z - targetZ));
+				
+				logger.info("Distance: " + distance);
+
+				if (dimension == targetDimension && distance < 4.0) {
 					ServerInfo server = this.plugin.getProxy().getServers().get(targetServerSymbol);
 					logger.info("Sending player " + playerName + " to server " + targetServerSymbol);
 					p.connect(server);
 				}
 			}
-			
 		} catch (Exception ex) {
 			logger.warning("Failed to handle message: " + ex.getMessage());
 			ex.printStackTrace();

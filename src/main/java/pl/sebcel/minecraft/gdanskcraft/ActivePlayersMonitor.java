@@ -43,14 +43,12 @@ public class ActivePlayersMonitor {
 							@Override
 							public void accept(ProxiedPlayer p) {
 								try {
-									logger.info("Checking if player " + p.getName() + " should be sent to server " + defaultServerSymbol);
-									logger.info("Lobby server symbol: " + lobbyServerSymbol);
-									logger.info("Player server symbol: " + p.getServer().getInfo().getName());
 									if (lobbyServerSymbol.equals(p.getServer().getInfo().getName())) {
 										p.sendMessage(TextComponent.fromLegacyText("Za chwile bedziesz przeniesiony do docelowego serwera. Trzeba zaczekac az serwer sie uruchomi."));
 										p.sendMessage(TextComponent.fromLegacyText("Status maszyny, na ktorej uruchomiony bedzie serwer: " + serviceProxy.getStatus()));
 										p.sendMessage(TextComponent.fromLegacyText("Jesli czekasz dluzej niz 1 minute, wyslij zgloszenie o problemie na Discordzie lub na adres email Sebastian.Celejewski@wp.pl"));
 										logger.info("Trying to send player " + p.getName() + " to server " + defaultServerSymbol);
+										
 										p.connect(defaultServer);
 									}
 								} catch (Exception ex) {
