@@ -24,11 +24,12 @@ public class BungeeCordPlugin extends Plugin {
 	@Override
 	public void onEnable() {
 		logger.info("Initializing MCGdanskcraft Bungee Cord plugin");
+		
 		initialize();
 		pluginConfig.initialize(getDataFolder(), CONFIG_FILE_NAME);
 		serviceProxy.initialize(pluginConfig.getServiceUrl(), pluginConfig.getApiKey(), pluginConfig.getInstanceName());
 		hardwareStatusManager.initialize(getProxy(), this.serviceProxy, pluginConfig.getServerCoolDownInSeconds());
-		playerTransferManager.initialize(getProxy(), pluginConfig.getLobbyServerSymbol(), pluginConfig.getDefaultServerSymbol());
+		playerTransferManager.initialize(getProxy(), serviceProxy, pluginConfig.getLobbyServerSymbol(), pluginConfig.getDefaultServerSymbol());
 		activePlayersMonitor.initialize(hardwareStatusManager, playerTransferManager);
 		eventHandler.initialize(this, pluginConfig, getProxy());
 

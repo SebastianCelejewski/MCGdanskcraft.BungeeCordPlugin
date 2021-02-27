@@ -7,6 +7,7 @@ import net.md_5.bungee.api.ProxyServer;
 import net.md_5.bungee.api.ServerPing;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.config.ServerInfo;
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 
 public class PlayerTransferManager implements Runnable {
 
@@ -16,10 +17,14 @@ public class PlayerTransferManager implements Runnable {
 	private ProxyServer proxyServer;
 	private String lobbyServerSymbol;
 	private String defaultServerSymbol;
+	private ServerWakeUpServiceProxy serviceProxy;
 	
-	public void initialize(ProxyServer proxyServer, String lobbyServerSymbol, String defaultServerSymbol) {
+	public void initialize(ProxyServer proxyServer, ServerWakeUpServiceProxy serviceProxy, String lobbyServerSymbol, String defaultServerSymbol) {
 		if (proxyServer == null) {
 			throw new IllegalArgumentException("Argument proxyServer can not be null");
+		}
+		if (serviceProxy == null) {
+			throw new IllegalArgumentException("Argument serviceProxy can not be null");
 		}
 		if (lobbyServerSymbol == null) {
 			throw new IllegalArgumentException("Argument lobbyServerSymbol can not be null");
@@ -34,6 +39,7 @@ public class PlayerTransferManager implements Runnable {
 			throw new IllegalArgumentException("Argument defaultServerSymbol can not be empty");
 		}
 		this.proxyServer = proxyServer;
+		this.serviceProxy = serviceProxy;
 		this.lobbyServerSymbol = lobbyServerSymbol;
 		this.defaultServerSymbol = defaultServerSymbol;
 	}
@@ -51,21 +57,7 @@ public class PlayerTransferManager implements Runnable {
 							p.sendMessage(TextComponent.fromLegacyText("Za chwile bedziesz przeniesiony do docelowego serwera. Trzeba zaczekac az serwer sie uruchomi."));
 							logger.info("Trying to send player " + p.getName() + " to server " + defaultServerSymbol);
 
-							Callback<ServerPing> callback = new Callback<ServerPing>() {
-								@Override
-								public void done(ServerPing result, Throwable error) {
-									if (result != null) {
-										logger.info("Result: " + result);
-										logger.info("Ping result: " + result.getDescriptionComponent().toPlainText());
-										logger.info("Error: " + error);
-										p.connect(defaultServer);
-									} else {
-										logger.info("Result is null");
-										p.sendMessage(TextComponent.fromLegacyText("Docelowy serwer jeszcze nie jest gotowy. Jesli czekasz dluzej niz 1 minute, wyslij zgloszenie o problemie na Discordzie lub na adres email Sebastian.Celejewski@wp.pl"));
-									}
-								}
-							};
-							defaultServer.ping(callback);
+							tryToSendPlayer(p, defaultServer);
 						}
 					} catch (Exception ex) {
 						logger.info("Failed to send player " + p.getName() + " to server " + defaultServerSymbol + ": " + ex.getMessage());
@@ -82,6 +74,29 @@ public class PlayerTransferManager implements Runnable {
 			} catch (Exception ex) {
 				// intentional
 			}			
+		}
+	}
+	
+	private void tryToSendPlayer(ProxiedPlayer p, ServerInfo defaultServer) {
+		ServerWakeUpServiceStatus hardwareStatus = serviceProxy.getStatus();
+		logger.info("Hardware status: " + hardwareStatus.toString());
+		
+		if (hardwareStatus == ServerWakeUpServiceStatus.RUNNING) {
+			Callback<ServerPing> callback = (result, error) -> {
+				if (result != null) {
+					String message = "Status maszyny: " + hardwareStatus + ", status serwera: RUNNING";
+					p.sendMessage(TextComponent.fromLegacyText(message));
+					p.connect(defaultServer);
+				} else {
+					String message = "Status maszyny: " + hardwareStatus + ", status serwera: STARTING";
+					p.sendMessage(TextComponent.fromLegacyText(message));
+//					p.sendMessage(TextComponent.fromLegacyText("Docelowy serwer jeszcze nie jest gotowy. Jesli czekasz dluzej niz 1 minute, wyslij zgloszenie o problemie na Discordzie lub na adres email Sebastian.Celejewski@wp.pl"));
+				}
+			};
+			defaultServer.ping(callback);
+		} else {
+			String message = "Status maszyny: " + hardwareStatus + ", status serwera: STOPPED";
+			p.sendMessage(TextComponent.fromLegacyText(message));
 		}
 	}
 }

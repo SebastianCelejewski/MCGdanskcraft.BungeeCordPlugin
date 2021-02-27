@@ -3,7 +3,6 @@ package pl.sebcel.minecraft.gdanskcraft;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
-import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -35,12 +34,12 @@ public class ServerWakeUpServiceProxy {
 		String request = url + "?action=stop&instanceName=" + instanceName;
 		sendRequest(request);
 	}
-	
-	public String getStatus() {
+
+	public ServerWakeUpServiceStatus getStatus() {
 		logger.info("Getting status of Minecraft server (instanceName: " + instanceName + ")");
 		String request = url + "?action=getStatus&instanceName=" + instanceName;
 		String status = sendRequest(request);
-		return status;
+		return ServerWakeUpServiceStatus.parse(status);
 	}
 
 	private String sendRequest(String request) {
@@ -48,17 +47,13 @@ public class ServerWakeUpServiceProxy {
 			HttpPost httpPost = new HttpPost(request);
 			httpPost.addHeader("x-api-key", apiKey);
 
-		    try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
-		        StatusLine statusLine = response.getStatusLine();
-		        logger.info(statusLine.getStatusCode() + " " + statusLine.getReasonPhrase());
-		        String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
-		        logger.info("Response body: " + responseBody);
-		        return responseBody;
-		    } 
+			try (CloseableHttpResponse response = httpClient.execute(httpPost)) {
+				return EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
+			}
 		} catch (Exception e) {
 			logger.info("Failed to send request to the server: " + e.getMessage());
 			e.printStackTrace();
-		}		
+		}
 		return "";
 	}
 }
