@@ -9,3 +9,4 @@ interWorldPortals:
     wo: 0,274,58,-419
   wo:
     sc: 0,-118,63,262
+interWorldPortalsEnabled: false

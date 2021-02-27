@@ -4,40 +4,36 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.logging.Logger;
 
 import net.md_5.bungee.api.plugin.Plugin;
 
 public class BungeeCordPlugin extends Plugin {
 
 	private final static String CONFIG_FILE_NAME = "config.yaml";
-
-	private ServerWakeUpServiceProxy serviceProxy;
-	private PluginEventHandler eventHandler;
-	private PluginConfig pluginConfig;
-	private ActivePlayersMonitor activePlayersMonitor;
 	
-	public BungeeCordPlugin() {
-		this.pluginConfig = new PluginConfig();
-		this.serviceProxy = new ServerWakeUpServiceProxy();
-		this.activePlayersMonitor = new ActivePlayersMonitor(serviceProxy);
-		this.eventHandler = new PluginEventHandler();
-	}
+	private final static Logger logger = Logger.getLogger(BungeeCordPlugin.class.getName());
+
+	private ServerWakeUpServiceProxy serviceProxy = new ServerWakeUpServiceProxy();
+	private PluginEventHandler eventHandler = new PluginEventHandler();
+	private PluginConfig pluginConfig = new PluginConfig();
+	private ActivePlayersMonitor activePlayersMonitor = new ActivePlayersMonitor();
+	private HardwareStatusManager hardwareStatusManager = new HardwareStatusManager();
+	private PlayerTransferManager playerTransferManager = new PlayerTransferManager();
 	
 	@Override
 	public void onEnable() {
+		logger.info("Initializing MCGdanskcraft Bungee Cord plugin");
 		initialize();
-		this.eventHandler.setPlugin(this);
-		this.eventHandler.setProxyServer(getProxy());
 		pluginConfig.initialize(getDataFolder(), CONFIG_FILE_NAME);
-		activePlayersMonitor.initialize(getProxy(), pluginConfig.getLobbyServerSymbol(), pluginConfig.getDefaultServerSymbol(), pluginConfig.getServerCoolDownInSeconds());
 		serviceProxy.initialize(pluginConfig.getServiceUrl(), pluginConfig.getApiKey(), pluginConfig.getInstanceName());
-
-		this.eventHandler.setPluginConfig(pluginConfig);
+		hardwareStatusManager.initialize(getProxy(), this.serviceProxy, pluginConfig.getServerCoolDownInSeconds());
+		playerTransferManager.initialize(getProxy(), pluginConfig.getLobbyServerSymbol(), pluginConfig.getDefaultServerSymbol());
+		activePlayersMonitor.initialize(hardwareStatusManager, playerTransferManager);
+		eventHandler.initialize(this, pluginConfig, getProxy());
 
 		getLogger().info("Minecraft Server Wake Up Plugin enabled. Default server symbol: " + pluginConfig.getDefaultServerSymbol() + ", server cool down period in seconds: " + pluginConfig.getServerCoolDownInSeconds());
-
 		getProxy().getPluginManager().registerListener(this, eventHandler);
-		
 		getProxy().registerChannel("gdanskcraft:main");
 	}
 	

@@ -19,6 +19,7 @@ public class PluginConfig {
 		public static final String DEFAULT_SERVER_SYMBOL = "defaultServerSymbol";
 		public static final String SERVER_COOL_DOWN_PERIOD_IN_SECONDS = "serverCoolDownPeriodInSeconds";
 		public static final String INTER_WORLD_PORTALS = "interWorldPortals";
+		public static final String INTER_WORLD_PORTALS_ENABLED = "interWorldPortalsStatus";
 	}
 	
 	private String serviceUrl;
@@ -28,6 +29,7 @@ public class PluginConfig {
 	private String defaultServerSymbol;
 	private int serverCoolDownPeriodInSeconds;
 	private Configuration interWorldPortals;
+	private boolean interWorldPortalsEnabled;
 	
 	public void initialize(File dataFolder, String configurationFileName) {
     	File file = new File(dataFolder, configurationFileName);
@@ -41,6 +43,7 @@ public class PluginConfig {
             this.defaultServerSymbol = configuration.getString(ParameterNames.DEFAULT_SERVER_SYMBOL);
             this.serverCoolDownPeriodInSeconds = configuration.getInt(ParameterNames.SERVER_COOL_DOWN_PERIOD_IN_SECONDS);
 			this.interWorldPortals = (Configuration) configuration.get(ParameterNames.INTER_WORLD_PORTALS);
+			this.interWorldPortalsEnabled = configuration.getBoolean(ParameterNames.INTER_WORLD_PORTALS_ENABLED);
         } catch (Exception ex) {
         	throw new RuntimeException("Failed to load configuration from " + file.getAbsolutePath() + ": " + ex.getMessage(), ex);
         }
@@ -102,5 +105,9 @@ public class PluginConfig {
 	
 	public Configuration getInterWorldPortals() {
 		return interWorldPortals;
+	}
+	
+	public boolean isInterWorldPortalsEnabled() {
+		return interWorldPortalsEnabled;
 	}
 }

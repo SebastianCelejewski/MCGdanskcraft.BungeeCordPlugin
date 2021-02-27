@@ -21,16 +21,19 @@ public class PluginEventHandler implements Listener {
 
 	private PluginConfig pluginConfig;
 	
-	public void setPlugin(BungeeCordPlugin plugin) {
+	public void initialize(BungeeCordPlugin plugin, PluginConfig pluginConfig, ProxyServer proxyServer) {
+		if (plugin == null) {
+			throw new IllegalArgumentException("Argument plugin can not be null");
+		}
+		if (pluginConfig == null) {
+			throw new IllegalArgumentException("Argument pluginConfig can not be null");
+		}
+		if (proxyServer == null) {
+			throw new IllegalArgumentException("Argument proxyServer can not be null");
+		}
 		this.plugin = plugin;
-	}
-	
-	public void setPluginConfig(PluginConfig pluginConfig) {
 		this.pluginConfig = pluginConfig;
-	}
-	
-	public void setProxyServer(ProxyServer server) {
-		this.proxyServer = server;
+		this.proxyServer = proxyServer;
 	}
 	
 	@EventHandler
@@ -79,8 +82,12 @@ public class PluginEventHandler implements Listener {
 
 				if (dimension == targetDimension && distance < 4.0) {
 					ServerInfo server = this.plugin.getProxy().getServers().get(targetServerSymbol);
-					logger.info("Sending player " + playerName + " to server " + targetServerSymbol);
-					p.connect(server);
+					if (pluginConfig.isInterWorldPortalsEnabled()) {
+						logger.info("Sending player " + playerName + " to server " + targetServerSymbol);
+						p.connect(server);
+					} else {
+						logger.info("Would send player " + playerName + " to server " + targetServerSymbol + " but not sending (functionality is disabled)");
+					}
 				}
 			}
 		} catch (Exception ex) {
